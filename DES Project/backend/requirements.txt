@@ -1,0 +1,9 @@
+flask
+flask-cors
+mediapipe
+opencv-python
+numpy
+gunicorn
+
+requests
+python-dotenv
