@@ -10,7 +10,14 @@ import traceback
 import base64
 
 app = Flask(__name__)
-CORS(app)
+CORS(
+    app,
+    resources={r"/*": {"origins": "*"}},
+    supports_credentials=True,
+    methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"]
+)
+
 
 
 
