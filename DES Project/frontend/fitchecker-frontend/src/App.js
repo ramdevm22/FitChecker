@@ -65,7 +65,7 @@ function App() {
       formData.append("cloth_image", cloth);
       formData.append("height", height);
 
-      const resp = await fetch("http://127.0.0.1:5000/fit-score", {
+      const resp = await fetch("https://fitchecker-4.onrender.com/fit-score", {
         method: "POST",
         body: formData,
       });
@@ -94,7 +94,7 @@ const fileToBase64 = (file) =>
     const clothBase64 = await fileToBase64(cloth);
 
 
-const resp = await fetch("http://127.0.0.1:5000/virtual-tryon-v3", {
+const resp = await fetch("https://fitchecker-4.onrender.com/virtual-tryon-v3", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
