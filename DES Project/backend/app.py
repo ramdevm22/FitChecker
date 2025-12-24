@@ -12,7 +12,7 @@ import base64
 app = Flask(__name__)
 CORS(app)
 
-mp_pose = mp.solutions.pose
+
 
 # ================================
 # Utility: Ellipse circumference
@@ -25,6 +25,10 @@ def ramanujan_ellipse_circumference(a, b):
 # Estimate Body Measurements
 # ================================
 def estimate_measurements(image_path, height_cm):
+    import mediapipe as mp   # ✅ lazy import
+
+    mp_pose = mp.solutions.pose
+
     image = cv2.imread(image_path)
     if image is None:
         return {"error": "Invalid image"}
@@ -48,13 +52,17 @@ def estimate_measurements(image_path, height_cm):
         ) * h
 
         px_to_cm = height_cm / pixel_height
-        chest = ramanujan_ellipse_circumference(chest_px / 2, chest_px / 2.8) * px_to_cm
+
+        chest = ramanujan_ellipse_circumference(
+            chest_px / 2, chest_px / 2.8
+        ) * px_to_cm
 
         return {
             "chest_cm": round(chest, 1),
             "waist_cm": round(chest * 0.85, 1),
             "hip_cm": round(chest * 1.05, 1),
         }
+
 
 # ================================
 # Fit Score Helpers
