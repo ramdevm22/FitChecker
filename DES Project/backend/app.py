@@ -10,14 +10,7 @@ import traceback
 import base64
 
 app = Flask(__name__)
-CORS(
-    app,
-    resources={r"/*": {"origins": "*"}},
-    supports_credentials=True,
-    methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"]
-)
-
+CORS(app)
 
 
 
@@ -32,13 +25,9 @@ def ramanujan_ellipse_circumference(a, b):
 # Estimate Body Measurements
 # ================================
 def estimate_measurements(image_path, height_cm):
-    try:
-        import mediapipe as mp
-        mp_pose = mp.solutions.pose
-    except Exception:
-        return {
-            "error": "Body detection service unavailable"
-        }
+    import mediapipe as mp   # ✅ lazy import
+
+    mp_pose = mp.solutions.pose
 
     image = cv2.imread(image_path)
     if image is None:
@@ -96,65 +85,6 @@ def recommend_size(chest):
 @app.route("/fit-score", methods=["POST"])
 def analyze_fit():
     try:
-        image = request.files.get("image")
-        cloth = request.files.get("cloth_image")
-        height = request.form.get("height")
-
-        if not image or not height:
-            return jsonify({"error": "Image and height are required"}), 400
-
-        height = float(height)
-
-        image_path = "user.jpg"
-        image.save(image_path)
-
-        user = estimate_measurements(image_path, height)
-
-        # ✅ ABSOLUTE STOP IF BODY ESTIMATION FAILS
-        if not isinstance(user, dict) or "chest_cm" not in user:
-            return jsonify({
-                "error": "Body measurement failed",
-                "message": "Please upload a clear full-body image facing the camera."
-            }), 400
-
-        cloth_measure = {
-            "chest": 100,
-            "waist": 90,
-            "hip": 96
-        }
-
-        fit = {}
-        total_score = 0
-
-        for part in ["chest", "waist", "hip"]:
-            score, label, diff = fit_score(
-                user[f"{part}_cm"],
-                cloth_measure[part]
-            )
-            fit[part] = {
-                "score": score,
-                "label": label,
-                "difference_cm": diff
-            }
-            total_score += score
-
-        return jsonify({
-            "chest_cm": user["chest_cm"],
-            "waist_cm": user["waist_cm"],
-            "hip_cm": user["hip_cm"],
-            "recommended_size": recommend_size(user["chest_cm"]),
-            "fit": fit,
-            "average_score": round(total_score / 3, 1),
-            "fit_summary": "Good Fit"
-        })
-
-    except Exception as e:
-        return jsonify({
-            "error": "Server error",
-            "details": str(e)
-        }), 500
-
-    try:
         image = request.files["image"]
         cloth = request.files["cloth_image"]
         height = float(request.form["height"])
@@ -163,6 +93,13 @@ def analyze_fit():
         image.save(image_path)
 
         user = estimate_measurements(image_path, height)
+
+# ✅ HANDLE MEDIAPIPE FAILURE
+        if "error" in user:
+            return jsonify({
+                "error": user["error"],
+                "message": "Unable to estimate body measurements. Please upload a clear full-body image."
+            }), 400
         cloth_measure = {"chest": 100, "waist": 90, "hip": 96}
 
         fit = {}
