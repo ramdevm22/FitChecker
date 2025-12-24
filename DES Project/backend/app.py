@@ -25,9 +25,13 @@ def ramanujan_ellipse_circumference(a, b):
 # Estimate Body Measurements
 # ================================
 def estimate_measurements(image_path, height_cm):
-    import mediapipe as mp   # ✅ lazy import
-
-    mp_pose = mp.solutions.pose
+    try:
+        import mediapipe as mp
+        mp_pose = mp.solutions.pose
+    except Exception:
+        return {
+            "error": "Body detection service unavailable"
+        }
 
     image = cv2.imread(image_path)
     if image is None:
