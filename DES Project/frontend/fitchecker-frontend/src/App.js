@@ -65,7 +65,9 @@ function App() {
       formData.append("cloth_image", cloth);
       formData.append("height", height);
 
-      const resp = await fetch("http://127.0.0.1:5000/fit-score", {
+      const API_URL = process.env.REACT_APP_API_URL;
+
+      const resp = await fetch(`${API_URL}/fit-score`, {
         method: "POST",
         body: formData,
       });
@@ -94,7 +96,9 @@ const fileToBase64 = (file) =>
     const clothBase64 = await fileToBase64(cloth);
 
 
-const resp = await fetch("http://127.0.0.1:5000/virtual-tryon-v3", {
+const API_URL = process.env.REACT_APP_API_URL;
+
+const resp = await fetch(`${API_URL}/virtual-tryon-v3`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
