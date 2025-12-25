@@ -50,8 +50,10 @@ function App() {
 
   const handleFitCheck = async (e) => {
     e.preventDefault();
-    if (!image || !cloth || !height) {
-      setError("Please upload images and enter height.");
+
+    // ✅ cloth REMOVED from validation (IMPORTANT)
+    if (!image || !height) {
+      setError("Please upload image and enter height.");
       return;
     }
 
@@ -62,7 +64,6 @@ function App() {
     try {
       const formData = new FormData();
       formData.append("image", image);
-      formData.append("cloth_image", cloth);
       formData.append("height", height);
 
       const API_URL = process.env.REACT_APP_API_URL;
@@ -72,8 +73,13 @@ function App() {
         body: formData,
       });
 
+      // ✅ SAFE RESPONSE HANDLING
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || "Fit failed");
+      }
+
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Fit failed");
       setResult(data);
 
     } catch (err) {
@@ -83,37 +89,38 @@ function App() {
     }
   };
 
-const fileToBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-  });
-  
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+
   const generateTryOn = async () => {
     const imageBase64 = await fileToBase64(image);
     const clothBase64 = await fileToBase64(cloth);
 
+    const API_URL = process.env.REACT_APP_API_URL;
 
-const API_URL = process.env.REACT_APP_API_URL;
+    const resp = await fetch(`${API_URL}/virtual-tryon-v3`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        image: imageBase64,
+        cloth_image: clothBase64,
+      }),
+    });
 
-const resp = await fetch(`${API_URL}/virtual-tryon-v3`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-  image: imageBase64,
-  cloth_image: clothBase64,
-}),
-});
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(text || "Try-on failed");
+    }
 
-const data = await resp.json();
-if (!resp.ok) throw new Error(data.error || "Try-on failed");
-
-setTryOnImage(data.tryon_image);
-
+    const data = await resp.json();
+    setTryOnImage(data.tryon_image);
   };
 
   return (
@@ -124,7 +131,6 @@ setTryOnImage(data.tryon_image);
 
         <div className="card p-4 shadow-sm mt-3">
           <form onSubmit={handleFitCheck}>
-            
             <div className="mb-3 text-center">
               <label className="fw-semibold">Upload or Capture Image</label>
               <input type="file" accept="image/*" onChange={handleUserChange} className="form-control" />
@@ -182,7 +188,6 @@ setTryOnImage(data.tryon_image);
               <p><strong>Average Score:</strong> {result.average_score}%</p>
               <p><strong>Summary:</strong> {result.fit_summary}</p>
 
-              {/* ✅ NEW TRY-ON BUTTON */}
               <button type="button" className="btn btn-warning w-100 mt-3"
                 onClick={generateTryOn} disabled={tryOnLoading}>
                 {tryOnLoading ? "Generating Try-On Preview..." : "Generate Try-On Preview"}
