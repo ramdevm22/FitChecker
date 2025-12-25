@@ -4,15 +4,11 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import math
-import os
-import random
 import traceback
 import base64
 
 app = Flask(__name__)
 CORS(app)
-
-
 
 # ================================
 # Utility: Ellipse circumference
@@ -25,8 +21,6 @@ def ramanujan_ellipse_circumference(a, b):
 # Estimate Body Measurements
 # ================================
 def estimate_measurements(image_path, height_cm):
-    import mediapipe as mp   # ✅ lazy import
-
     mp_pose = mp.solutions.pose
 
     image = cv2.imread(image_path)
@@ -51,6 +45,9 @@ def estimate_measurements(image_path, height_cm):
             lm[mp_pose.PoseLandmark.NOSE.value].y
         ) * h
 
+        if pixel_height == 0:
+            return {"error": "Invalid pose detected"}
+
         px_to_cm = height_cm / pixel_height
 
         chest = ramanujan_ellipse_circumference(
@@ -62,7 +59,6 @@ def estimate_measurements(image_path, height_cm):
             "waist_cm": round(chest * 0.85, 1),
             "hip_cm": round(chest * 1.05, 1),
         }
-
 
 # ================================
 # Fit Score Helpers
@@ -80,13 +76,19 @@ def recommend_size(chest):
     return "XL"
 
 # ================================
-# FIT SCORE API
+# FIT SCORE API (FIXED)
 # ================================
 @app.route("/fit-score", methods=["POST"])
 def analyze_fit():
     try:
+        # -------- VALIDATION (IMPORTANT) --------
+        if "image" not in request.files:
+            return jsonify({"error": "Image not provided"}), 400
+
+        if "height" not in request.form:
+            return jsonify({"error": "Height not provided"}), 400
+
         image = request.files["image"]
-        cloth = request.files["cloth_image"]
         height = float(request.form["height"])
 
         image_path = "user.jpg"
@@ -94,21 +96,28 @@ def analyze_fit():
 
         user = estimate_measurements(image_path, height)
 
-# ✅ HANDLE MEDIAPIPE FAILURE
+        # -------- HANDLE MEDIAPIPE FAILURE --------
         if "error" in user:
             return jsonify({
                 "error": user["error"],
                 "message": "Unable to estimate body measurements. Please upload a clear full-body image."
             }), 400
+
+        # -------- DUMMY CLOTH MEASUREMENTS --------
         cloth_measure = {"chest": 100, "waist": 90, "hip": 96}
 
         fit = {}
         total = 0
         for part in ["chest", "waist", "hip"]:
             s, l, d = fit_score(user[f"{part}_cm"], cloth_measure[part])
-            fit[part] = {"score": s, "label": l, "difference_cm": d}
+            fit[part] = {
+                "score": s,
+                "label": l,
+                "difference_cm": d
+            }
             total += s
 
+        # -------- ALWAYS RETURN JSON --------
         return jsonify({
             "chest_cm": user["chest_cm"],
             "waist_cm": user["waist_cm"],
@@ -117,14 +126,17 @@ def analyze_fit():
             "fit": fit,
             "average_score": round(total / 3, 1),
             "fit_summary": "Good Fit"
-        })
+        }), 200
 
     except Exception as e:
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": "Internal server error",
+            "details": str(e)
+        }), 500
 
 # ================================
-# VIRTUAL TRY-ON (OpenCV ONLY)
+# VIRTUAL TRY-ON
 # ================================
 @app.route("/virtual-tryon-v3", methods=["POST"])
 def virtual_tryon_v3():
@@ -145,12 +157,14 @@ def virtual_tryon_v3():
             cloth = cv2.resize(cloth, (int(w * 0.4), int(h * 0.4)))
             x, y = int(w * 0.3), int(h * 0.35)
             roi = image[y:y+cloth.shape[0], x:x+cloth.shape[1]]
-            image[y:y+cloth.shape[0], x:x+cloth.shape[1]] = cv2.addWeighted(roi, 0.4, cloth, 0.6, 0)
+            image[y:y+cloth.shape[0], x:x+cloth.shape[1]] = cv2.addWeighted(
+                roi, 0.4, cloth, 0.6, 0
+            )
 
         _, buffer = cv2.imencode(".png", image)
         return jsonify({
             "tryon_image": f"data:image/png;base64,{base64.b64encode(buffer).decode()}"
-        })
+        }), 200
 
     except Exception as e:
         traceback.print_exc()
@@ -161,7 +175,7 @@ def virtual_tryon_v3():
 # ================================
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok"}), 200
 
 # ================================
 # RUN
