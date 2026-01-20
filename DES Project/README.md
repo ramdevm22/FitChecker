@@ -25,12 +25,12 @@ React.js + Bootstrap for a modern responsive UI
 
 ⚙️ Features
 
-✅ Upload a user image and enter height (in cm)
-✅ Upload a cloth image for comparison
-✅ Get real-time body measurements (chest, waist, hips)
-✅ AI-generated fit score and summary
-✅ Clean, responsive, and minimal Bootstrap interface
-✅ Modular architecture (Frontend + Backend separation)
+1. Upload a user image and enter height (in cm)
+2. Upload a cloth image for comparison
+3. Get real-time body measurements (chest, waist, hips)
+4. AI-generated fit score and summary
+5. Clean, responsive, and minimal Bootstrap interface
+6. Modular architecture (Frontend + Backend separation)
 
 🧩 System Architecture
         +---------------------------+
@@ -106,7 +106,7 @@ Hip ≈ 1.05 × Chest
   "user_measures": {"chest_cm": 95.9, "waist_cm": 81.5, "hip_cm": 100.7},
   "cloth_measures": {"chest": 100.4, "waist": 90.3, "hip": 96.2},
   "average_score": 88.7,
-  "fit_summary": "Good Fit 👍"
+  "fit_summary": "Good Fit"
 }
 
 | Test Parameter     | Result       |
