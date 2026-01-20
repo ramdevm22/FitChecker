@@ -1,4 +1,4 @@
-fitChecker – AI-Based Clothing Size Recommendation System
+## fitChecker – AI-Based Clothing Size Recommendation System
 Faculty Guide : Mr. Amar Behera
 
 | Name           | Roll No | Contribution                   |
@@ -8,7 +8,7 @@ Faculty Guide : Mr. Amar Behera
 | Rahul Singh    | 220855  | Research & testing             |
 | Vishal Kumar   | 221205  | Documentation & presentation   |
 
-Overview
+### Overview
 
 fitChecker is an AI-powered web application that predicts the best-fitting clothing size for a user based on their body measurements extracted from an image.
 It also allows the user to upload a clothing image and checks how well that clothing would fit, giving a real-time Fit Score and summary such as “Perfect Fit”, “Good Fit”, or “Loose”.
@@ -23,7 +23,7 @@ Flask as the backend API
 
 React.js + Bootstrap for a modern responsive UI
 
-⚙️ Features
+### Features
 
 1. Upload a user image and enter height (in cm)
 2. Upload a cloth image for comparison
@@ -32,7 +32,7 @@ React.js + Bootstrap for a modern responsive UI
 5. Clean, responsive, and minimal Bootstrap interface
 6. Modular architecture (Frontend + Backend separation)
 
-🧩 System Architecture
+### System Architecture
         +---------------------------+
         |        React Frontend     |
         |  (Bootstrap UI + Fetch)   |
@@ -61,7 +61,7 @@ React.js + Bootstrap for a modern responsive UI
 | IDE           | VS Code                  |
 
 
-Fit Score Algorithm : 
+### Fit Score Algorithm : 
 
 The system calculates how closely the user’s body measurements match the cloth measurements.
 FitScore=100×(1−2×Tolerance∣User−Cloth∣​)
@@ -116,7 +116,7 @@ Hip ≈ 1.05 × Chest
 | Fit Classification | 92% accuracy |
 | API Latency        | ~1.5 seconds |
 
-Future Enhancements
+### Future Enhancements
 
 Integrate directly with Flipkart/Amazon APIs to fetch cloth dimensions.
 
@@ -143,7 +143,7 @@ fitChecker/
 │
 └── README.md
 
-Conclusion
+### Conclusion
 
 The fitChecker project successfully demonstrates how AI and computer vision can enhance the online shopping experience.
 By automating body-measurement estimation and clothing-fit evaluation, this system reduces guesswork, improves satisfaction, and lays the foundation for future AI-driven virtual try-on systems.
